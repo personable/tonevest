@@ -2,30 +2,47 @@ import type { IdentifyPedalsOutput } from '@/ai/flows/identify-pedal-from-image'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Info, Tag, DollarSign, Lightbulb, ThumbsUp, ThumbsDown, AlertTriangle, Building, Box, Sigma } from 'lucide-react'; // Added Sigma for total
+import { Info, Tag, DollarSign, Lightbulb, ThumbsUp, ThumbsDown, AlertTriangle, Building, Box, Sigma, MessageSquareQuote } from 'lucide-react'; // Added Sigma, MessageSquareQuote
 
 interface IdentificationResultProps {
   result: IdentifyPedalsOutput | null;
 }
 
 export function IdentificationResult({ result }: IdentificationResultProps) {
-  if (!result || result.pedalIdentifications.length === 0) {
-     // Display a message if the array is empty but the result object exists
-     if (result && result.pedalIdentifications.length === 0) {
-       return (
-         <Card className="w-full shadow-md mt-6 border">
-           <CardHeader>
-             <CardTitle className="text-xl flex items-center gap-2">
-                <Info className="w-5 h-5" /> Identification Result
-             </CardTitle>
-           </CardHeader>
-           <CardContent>
-             <p className="text-muted-foreground">No pedals were identified in the image.</p>
-           </CardContent>
-         </Card>
-       );
-     }
-    return null; // Return null if result itself is null
+  // Early exit if result is null
+  if (!result) {
+    return null;
+  }
+
+  // Handle case where no pedals were identified, but assessment might still exist
+  if (result.pedalIdentifications.length === 0) {
+    return (
+      <div className="space-y-4 mt-6">
+        <Card className="w-full shadow-md border">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Info className="w-5 h-5" /> Identification Result
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">No pedals were identified in the image.</p>
+          </CardContent>
+        </Card>
+        {/* Display overall assessment even if no pedals are found */}
+        {result.overallAssessment && (
+           <Card className="w-full shadow-md border bg-muted/20">
+             <CardHeader className="pb-2 pt-3">
+               <CardTitle className="text-lg flex items-center gap-2">
+                 <MessageSquareQuote className="w-5 h-5 text-primary" /> Overall Assessment
+               </CardTitle>
+             </CardHeader>
+             <CardContent className="pb-3">
+               <p className="text-sm text-foreground/90 italic">{result.overallAssessment}</p>
+             </CardContent>
+           </Card>
+        )}
+      </div>
+    );
   }
 
   // Calculate total price using the number field directly
@@ -99,6 +116,21 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
                 </p>
             </CardContent>
         </Card>
+
+       {/* Overall Assessment Display */}
+       {result.overallAssessment && (
+         <Card className="w-full shadow-md border bg-muted/20">
+           <CardHeader className="pb-2 pt-3">
+             <CardTitle className="text-lg flex items-center gap-2">
+               <MessageSquareQuote className="w-5 h-5 text-primary" /> Overall Assessment
+             </CardTitle>
+           </CardHeader>
+           <CardContent className="pb-3">
+             <p className="text-sm text-foreground/90 italic">{result.overallAssessment}</p>
+           </CardContent>
+         </Card>
+       )}
+
 
         <Separator />
 
