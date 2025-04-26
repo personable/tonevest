@@ -20,7 +20,8 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
   if (result.pedalIdentifications.length === 0) {
     return (
       <div className="space-y-4 mt-6">
-        <Card className="w-full shadow-md border">
+        {/* Removed shadow, adjusted styling */}
+        <Card className="w-full border rounded-none">
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2 font-serif">
               <Info className="w-5 h-5" /> Identification Result
@@ -32,7 +33,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
         </Card>
         {/* Display overall assessment even if no pedals are found */}
         {result.overallAssessment && (
-           <Card className="w-full shadow-md border bg-muted/20">
+           <Card className="w-full border rounded-none bg-muted/20">
              <CardHeader className="pb-2 pt-3">
                <CardTitle className="text-lg flex items-center gap-2 font-serif">
                  <MessageSquareQuote className="w-5 h-5 text-primary" /> Overall Assessment
@@ -68,17 +69,17 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
       value,
       // Calculate percentage only if totalPrice is not zero
       percentage: totalPrice > 0 ? Math.round((value / totalPrice) * 100) : 0,
-      fill: `hsl(var(--chart-${(index % 5) + 1}))` // Use index from map
+      fill: `hsl(var(--chart-${(index % 5) + 1}))` // Use index from map for chart colors
     }))
     .filter(item => item.value > 0) // Filter out manufacturers with zero value
     .sort((a, b) => b.value - a.value); // Sort by value descending
 
-  // Define chart configuration for tooltips and colors
+  // Define chart configuration for tooltips and colors using updated theme
   const chartConfig = chartData.reduce((acc, item, index) => {
     // Use the final index *after sorting* for consistent color assignment
     acc[item.make] = {
       label: item.make,
-      color: `hsl(var(--chart-${(index % 5) + 1}))`,
+      color: `hsl(var(--chart-${(index % 5) + 1}))`, // Use updated chart colors
     };
     return acc;
   }, {} as ChartConfig);
@@ -86,9 +87,9 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
 
   const getConfidenceBadgeVariant = (score: number | undefined) => {
     if (score === undefined) return 'secondary';
-    if (score >= 0.8) return 'default'; // Primary color (usually blue)
-    if (score >= 0.5) return 'outline'; // Outline style
-    return 'destructive'; // Destructive color (red)
+    if (score >= 0.8) return 'default'; // Use default (primary) for high confidence
+    if (score >= 0.5) return 'outline';
+    return 'destructive';
   };
 
   const getConfidenceLabel = (score: number | undefined) => {
@@ -98,22 +99,24 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
     return 'Low Confidence';
    }
 
+   // Using accent color for positive advice, neutral for others
    const getAdviceIcon = (advice: string | undefined) => {
      switch (advice) {
-       case 'Keep': return <ThumbsUp className="w-4 h-4 text-green-600" />;
-       case 'Sell': return <ThumbsDown className="w-4 h-4 text-red-600" />;
-       case 'Buy If Cheap': return <DollarSign className="w-4 h-4 text-blue-600" />;
-       case 'Consider Selling': return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
+       case 'Keep': return <ThumbsUp className="w-4 h-4 text-accent" />; // Use accent color
+       case 'Sell': return <ThumbsDown className="w-4 h-4 text-destructive" />;
+       case 'Buy If Cheap': return <DollarSign className="w-4 h-4 text-primary" />; // Use primary color
+       case 'Consider Selling': return <AlertTriangle className="w-4 h-4 text-yellow-600" />; // Keep warning color
        default: return <Lightbulb className="w-4 h-4 text-muted-foreground" />;
      }
    };
 
+   // Adjusted badge variants for the new theme
    const getAdviceBadgeVariant = (advice: string | undefined) => {
     switch (advice) {
-        case 'Keep': return 'default'; // Or a custom 'success' variant if defined
+        case 'Keep': return 'default'; // Primary badge
         case 'Sell': return 'destructive';
-        case 'Buy If Cheap': return 'secondary'; // Use secondary for less strong advice
-        case 'Consider Selling': return 'outline'; // Use outline for cautionary advice
+        case 'Buy If Cheap': return 'secondary';
+        case 'Consider Selling': return 'outline';
         default: return 'secondary';
       }
    }
@@ -143,7 +146,8 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
         const actualPrice = manufacturerData[make];
 
         return (
-            <div className="flex flex-col gap-0.5">
+            // Use card styling for tooltip
+            <div className="flex flex-col gap-0.5 p-2 bg-card text-card-foreground border rounded-none">
                 <span className="font-medium">{make}</span>
                 <span className="text-muted-foreground">
                     {value}% ({formatPrice(actualPrice)})
@@ -158,8 +162,8 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
          <Tag className="w-5 h-5" /> Identification Results
        </h2>
 
-        {/* Total Price Display */}
-        <Card className="w-full shadow-md border bg-muted/30">
+        {/* Total Price Display - Updated styling */}
+        <Card className="w-full border rounded-none bg-muted/30">
             <CardContent className="p-4">
                 <div className="flex justify-between items-center">
                     <span className="font-semibold text-lg flex items-center gap-2 font-serif">
@@ -175,9 +179,9 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
             </CardContent>
         </Card>
 
-       {/* Overall Assessment Display */}
+       {/* Overall Assessment Display - Updated styling */}
        {result.overallAssessment && (
-         <Card className="w-full shadow-md border bg-muted/20">
+         <Card className="w-full border rounded-none bg-muted/20">
            <CardHeader className="pb-2 pt-3">
              <CardTitle className="text-lg flex items-center gap-2 font-serif">
                <MessageSquareQuote className="w-5 h-5 text-primary" /> Overall Assessment
@@ -189,9 +193,9 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
          </Card>
        )}
 
-       {/* Manufacturer Value Distribution Chart */}
+       {/* Manufacturer Value Distribution Chart - Updated styling */}
        {chartData.length > 0 && totalPrice > 0 && (
-          <Card className="w-full shadow-md border">
+          <Card className="w-full border rounded-none">
             <CardHeader className="pb-2 pt-3">
               <CardTitle className="text-lg flex items-center gap-2 font-serif">
                 <BarChartHorizontalBig className="w-5 h-5 text-primary" /> Manufacturer Value Distribution
@@ -203,27 +207,26 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
                 <ResponsiveContainer width="100%" height={200}>
                    {/* Use the generated chartData with fill property */}
                    <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 30 }}>
-                     <CartesianGrid horizontal={false} />
+                     <CartesianGrid horizontal={false} stroke="hsl(var(--border))" /> {/* Use border color */}
                      <XAxis type="number" dataKey="percentage" unit="%" hide />
                      <YAxis
                        dataKey="make"
                        type="category"
                        tickLine={false}
                        axisLine={false}
-                       tick={{ fontSize: 12 }}
+                       tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }} // Use foreground color
                        width={80} // Adjust width as needed
                      />
                      <Tooltip
                         cursor={{ fill: 'hsl(var(--muted))' }}
                         content={<ChartTooltipContent
                             formatter={customTooltipFormatter} // Use the custom formatter
-                            // labelFormatter={(label) => label} // labelFormatter is not needed if formatter handles everything
                             indicator="dot"
-                            // hideLabel // Hide default label if formatter handles it
+                            // Use default tooltip styling defined in the component
                         />}
                       />
                      {/* Use the 'fill' property already assigned in chartData */}
-                     <Bar dataKey="percentage" radius={4}>
+                     <Bar dataKey="percentage" radius={0}> {/* Remove radius for sharp corners */}
                         {/* Use the index-based fill from chartData */}
                         {chartData.map((entry, index) => (
                            <LabelList key={`label-${index}`} dataKey="percentage" position="right" offset={8} className="fill-foreground" fontSize={12} formatter={(value: number) => `${value}%`} />
@@ -240,8 +243,9 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
         <Separator />
 
        {result.pedalIdentifications.map((pedal, index) => (
-         <Card key={index} className="w-full shadow-sm border overflow-hidden">
-           <CardHeader className="pb-3 pt-4 bg-muted/50">
+         // Updated card styling for individual pedals
+         <Card key={index} className="w-full border rounded-none overflow-hidden">
+           <CardHeader className="pb-3 pt-4 bg-muted/50 border-b"> {/* Added border */}
              {/* Display Make and Model Separately */}
              <CardTitle className="text-lg flex items-center gap-2 font-serif">
                 <Building className="w-5 h-5 text-primary" /> {pedal.make || 'Unknown Make'}
@@ -257,11 +261,11 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
                    <Info className="w-4 h-4" /> Confidence:
                 </span>
                {pedal.confidence !== undefined ? (
-                 <Badge variant={getConfidenceBadgeVariant(pedal.confidence)}>
+                 <Badge variant={getConfidenceBadgeVariant(pedal.confidence)} className="rounded-none"> {/* Removed rounded corners */}
                    {getConfidenceLabel(pedal.confidence)} ({(pedal.confidence * 100).toFixed(0)}%)
                  </Badge>
                ) : (
-                 <Badge variant="secondary">
+                 <Badge variant="secondary" className="rounded-none"> {/* Removed rounded corners */}
                    Not Specified
                  </Badge>
                )}
@@ -283,7 +287,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
                 <span className="font-medium text-muted-foreground flex items-center gap-1 text-sm">
                    {getAdviceIcon(pedal.advice)} Advice:
                 </span>
-                 <Badge variant={getAdviceBadgeVariant(pedal.advice)} className="capitalize">
+                 <Badge variant={getAdviceBadgeVariant(pedal.advice)} className="capitalize rounded-none"> {/* Removed rounded corners */}
                      {pedal.advice || 'N/A'}
                  </Badge>
              </div>

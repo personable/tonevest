@@ -171,18 +171,21 @@ export default function Home() {
   const hasResults = identificationResult && identificationResult.pedalIdentifications.length > 0;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-background via-secondary/20 to-background">
-      <Card className="w-full max-w-lg shadow-xl rounded-xl overflow-hidden">
-        <CardHeader className="text-center bg-primary text-primary-foreground p-6">
-           <div className="flex justify-center items-center gap-2 mb-2">
-             <Guitar className="w-8 h-8" />
-             <CardTitle className="text-3xl font-bold font-serif">Pedal Identifier</CardTitle>
+    // Updated main container for full screen and simplified background
+    <main className="flex min-h-screen flex-col items-center p-4 sm:p-8 bg-background">
+      {/* Removed max-w-lg and shadow-xl, adjusted layout */}
+      <Card className="w-full h-full flex flex-col border-0 rounded-none">
+        <CardHeader className="text-center bg-primary text-primary-foreground p-4 border-b border-border">
+           <div className="flex justify-center items-center gap-2 mb-1">
+             <Guitar className="w-6 h-6" />
+             <CardTitle className="text-2xl font-bold font-serif">Pedal Identifier</CardTitle>
            </div>
-          <CardDescription className="text-primary-foreground/80">
-            Upload or capture a photo containing guitar pedals!
+          <CardDescription className="text-primary-foreground/80 text-sm">
+            Upload or capture a photo containing guitar pedals.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-6 space-y-6">
+        {/* Added flex-grow to allow content to expand */}
+        <CardContent className="p-4 sm:p-6 space-y-4 flex-grow overflow-y-auto">
 
           <Tabs value={inputMode} onValueChange={(value) => setInputMode(value as InputMode)} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -201,7 +204,8 @@ export default function Home() {
 
             {/* Camera Tab */}
             <TabsContent value="camera" className="mt-4 space-y-4">
-              <div className="relative aspect-video w-full bg-muted rounded-md overflow-hidden border">
+              {/* Adjusted video container styling */}
+              <div className="relative aspect-video w-full bg-muted rounded-none overflow-hidden border">
                 {/* Show video only if permission is granted or pending */}
                 {hasCameraPermission !== false && (
                   <video
@@ -219,7 +223,7 @@ export default function Home() {
                   </div>
                 )}
                 {hasCameraPermission === false && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-destructive/80 text-destructive-foreground p-4">
+                  <div className="absolute inset-0 flex items-center justify-center bg-destructive/80 text-destructive-foreground p-4 text-center">
                     Camera access denied. Please enable in browser settings.
                   </div>
                 )}
@@ -231,12 +235,12 @@ export default function Home() {
                        alt="Captured pedal"
                        layout="fill"
                        objectFit="contain"
-                       className="rounded-md"
+                       className="rounded-none" // Removed rounded corners
                      />
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute top-2 right-2 h-8 w-8 text-white bg-black/50 hover:bg-black/70"
+                      className="absolute top-2 right-2 h-8 w-8 text-white bg-black/50 hover:bg-black/70 rounded-none" // Removed rounded corners
                       onClick={handleClearImage}
                       aria-label="Clear captured photo"
                     >
@@ -248,7 +252,7 @@ export default function Home() {
 
               {/* Show permission denied alert below video */}
               {hasCameraPermission === false && (
-                 <Alert variant="destructive">
+                 <Alert variant="destructive" className="rounded-none"> {/* Removed rounded corners */}
                    <AlertTitle>Camera Access Required</AlertTitle>
                    <AlertDescription>
                      Please allow camera access in your browser settings to use this feature. You may need to refresh the page after granting permission.
@@ -261,7 +265,7 @@ export default function Home() {
                 <Button
                   onClick={handleCapture}
                   disabled={isCapturing || !streamRef.current}
-                  className="w-full"
+                  className="w-full rounded-none" // Removed rounded corners
                   variant="secondary"
                 >
                   {isCapturing ? (
@@ -282,7 +286,8 @@ export default function Home() {
           <Button
             onClick={handleIdentify}
             disabled={!imageDataUri || isLoading}
-            className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-lg py-6 rounded-lg shadow-md transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+            // Updated button styling: Use accent color, remove shadow, remove rounded corners
+            className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-lg py-3 rounded-none transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
             aria-live="polite"
           >
             {isLoading ? (
@@ -300,18 +305,16 @@ export default function Home() {
           )}
 
           {!isLoading && !identificationResult && imageDataUri && (
-             <div className="text-center text-muted-foreground p-4 border border-dashed rounded-md">
+             <div className="text-center text-muted-foreground p-4 border border-dashed rounded-none"> {/* Removed rounded corners */}
                Ready to identify. Click the button above!
              </div>
            )}
 
         </CardContent>
       </Card>
-       <footer className="mt-8 text-center text-sm text-muted-foreground">
+       <footer className="mt-4 text-center text-xs text-muted-foreground">
          Powered by Genkit AI
        </footer>
     </main>
   );
 }
-        
-      

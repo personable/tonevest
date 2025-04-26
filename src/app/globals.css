@@ -8,74 +8,59 @@ body {
 
 @layer base {
   :root {
-    --background: 210 11% 96%; /* Slightly off-white for softer background */
-    --foreground: 210 30% 15%; /* Dark blue-gray for text */
-    --card: 0 0% 100%;
-    --card-foreground: 210 30% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 30% 15%;
-    --primary: 207 100% 15%; /* #003049 Deep Blue */
-    --primary-foreground: 0 0% 98%; /* White text on primary */
-    --secondary: 0 0% 84%; /* #D6D6D6 Light Gray */
-    --secondary-foreground: 210 30% 15%; /* Dark text on secondary */
+    --background: 0 0% 100%; /* White */
+    --foreground: 0 0% 9%; /* Near Black */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 0 0% 9%; /* Near Black */
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 0 0% 9%; /* Near Black */
+    --primary: 0 0% 9%; /* Near Black */
+    --primary-foreground: 0 0% 98%; /* Near White */
+    --secondary: 0 0% 96.1%; /* Light Gray */
+    --secondary-foreground: 0 0% 9%; /* Near Black */
     --muted: 0 0% 90%; /* Slightly darker gray for muted elements */
-    --muted-foreground: 0 0% 45%;
-    --accent: 0 80% 50%; /* #D62828 Bright Orange */
-    --accent-foreground: 0 0% 98%; /* White text on accent */
+    --muted-foreground: 0 0% 45.1%; /* Muted Text */
+    --accent: 324 75% 48%; /* #d71f85 Pink Accent */
+    --accent-foreground: 0 0% 98%; /* Near White text on accent */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 80% 50%; /* Accent color for rings */
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 0 0% 89.8%; /* Light Gray Border */
+    --input: 0 0% 89.8%; /* Light Gray Input */
+    --ring: 324 75% 48%; /* Accent color for rings */
+    --chart-1: 324 75% 48%; /* Accent Pink */
+    --chart-2: 0 0% 40%;   /* Medium Gray */
+    --chart-3: 0 0% 60%;   /* Lighter Gray */
+    --chart-4: 0 0% 75%;   /* Even Lighter Gray */
+    --chart-5: 0 0% 85%;   /* Very Light Gray */
+    --radius: 0rem; /* Remove rounded corners for a sharper look */
   }
   .dark {
-    /* Define dark theme if needed, otherwise keep similar or adjust */
-    --background: 210 30% 10%; /* Dark blue-gray */
-    --foreground: 0 0% 84%; /* Light Gray */
-    --card: 210 30% 15%;
-    --card-foreground: 0 0% 84%;
-    --popover: 210 30% 10%;
-    --popover-foreground: 0 0% 84%;
-    --primary: 207 100% 75%; /* Lighter blue for dark mode */
-    --primary-foreground: 207 100% 10%;
-    --secondary: 210 10% 25%; /* Darker gray */
-    --secondary-foreground: 0 0% 84%;
-    --muted: 210 10% 20%;
+    /* Define dark theme (Optional - keeping contrast) */
+    --background: 0 0% 9%; /* Near Black */
+    --foreground: 0 0% 98%; /* Near White */
+    --card: 0 0% 12%; /* Dark Gray */
+    --card-foreground: 0 0% 98%; /* Near White */
+    --popover: 0 0% 9%; /* Near Black */
+    --popover-foreground: 0 0% 98%; /* Near White */
+    --primary: 0 0% 98%; /* Near White */
+    --primary-foreground: 0 0% 9%; /* Near Black */
+    --secondary: 0 0% 14.9%; /* Slightly Lighter Gray */
+    --secondary-foreground: 0 0% 98%; /* Near White */
+    --muted: 0 0% 14.9%;
     --muted-foreground: 0 0% 63.9%;
-    --accent: 0 80% 60%; /* Slightly brighter orange */
-    --accent-foreground: 0 0% 5%;
+    --accent: 324 75% 55%; /* Slightly lighter pink for dark mode */
+    --accent-foreground: 0 0% 9%; /* Near Black text on accent */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 210 10% 25%;
-    --input: 210 10% 25%;
-    --ring: 0 80% 60%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 0 0% 14.9%; /* Dark Gray Border */
+    --input: 0 0% 14.9%; /* Dark Gray Input */
+    --ring: 324 75% 55%;
+    --chart-1: 324 75% 55%; /* Lighter Accent Pink */
+    --chart-2: 0 0% 60%;   /* Medium Gray */
+    --chart-3: 0 0% 40%;   /* Darker Gray */
+    --chart-4: 0 0% 30%;   /* Even Darker Gray */
+    --chart-5: 0 0% 20%;   /* Very Dark Gray */
+    --radius: 0rem; /* Remove rounded corners */
   }
 }
 

@@ -66,7 +66,8 @@ export function ImageInput({ onImageChange, className, currentImage, onClear }: 
     <div className={cn('space-y-4', className)}>
       <div
         className={cn(
-          'relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer border-border hover:border-primary transition-colors duration-200 ease-in-out',
+          // Updated styling: remove rounded corners
+          'relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-none cursor-pointer border-border hover:border-primary transition-colors duration-200 ease-in-out',
           imagePreview ? 'border-solid p-4' : 'p-6' // Keep padding when preview is shown
         )}
         onClick={() => fileInputRef.current?.click()}
@@ -81,15 +82,15 @@ export function ImageInput({ onImageChange, className, currentImage, onClear }: 
               alt={fileName ? `Selected: ${fileName}` : "Selected image preview"} // Improve alt text
               width={200} // Consider using layout="fill" and objectFit="contain" for responsiveness
               height={200}
-              className="object-contain max-h-full max-w-full rounded-md"
+              className="object-contain max-h-full max-w-full rounded-none" // Removed rounded corners
               style={{ maxWidth: '100%', maxHeight: 'calc(100% - 2.5rem)' }} // Ensure image fits
             />
-            <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+            <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded-none"> {/* Removed rounded corners */}
               <span className="truncate mr-2">{fileName || 'Preview'}</span>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                className="h-6 w-6 text-muted-foreground hover:text-destructive rounded-none" // Removed rounded corners
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent triggering file input click
                   handleInternalClear();
@@ -122,5 +123,3 @@ export function ImageInput({ onImageChange, className, currentImage, onClear }: 
     </div>
   );
 }
-        
-      
