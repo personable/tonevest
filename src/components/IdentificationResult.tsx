@@ -63,12 +63,12 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
 
   // Prepare data for the bar chart
   const chartData = Object.entries(manufacturerData)
-    .map(([make, value]) => ({
+    .map(([make, value], index) => ({ // Added index parameter
       make,
       value,
       // Calculate percentage only if totalPrice is not zero
       percentage: totalPrice > 0 ? Math.round((value / totalPrice) * 100) : 0,
-      fill: `hsl(var(--chart-${(Object.keys(acc).indexOf(make) % 5) + 1}))` // Assign color based on index
+      fill: `hsl(var(--chart-${(index % 5) + 1}))` // Use index from map
     }))
     .filter(item => item.value > 0) // Filter out manufacturers with zero value
     .sort((a, b) => b.value - a.value); // Sort by value descending
@@ -77,10 +77,11 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
   const chartConfig = chartData.reduce((acc, item, index) => {
     acc[item.make] = {
       label: item.make,
-      color: `hsl(var(--chart-${(index % 5) + 1}))`, // Use the same color logic
+      color: `hsl(var(--chart-${(index % 5) + 1}))`, // Use the same color logic based on the final sorted array index
     };
     return acc;
   }, {} as ChartConfig);
+
 
   const getConfidenceBadgeVariant = (score: number | undefined) => {
     if (score === undefined) return 'secondary';
@@ -174,6 +175,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
             <CardContent className="pb-4">
               <ChartContainer config={chartConfig} className="h-[200px] w-full">
                 <ResponsiveContainer width="100%" height={200}>
+                   {/* Use the generated chartData with fill property */}
                    <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 30 }}>
                      <CartesianGrid horizontal={false} />
                      <XAxis type="number" dataKey="percentage" unit="%" hide />
@@ -188,13 +190,17 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
                      <Tooltip
                         cursor={{ fill: 'hsl(var(--muted))' }}
                         content={<ChartTooltipContent
-                            formatter={(value, name) => `${name}: ${value}% (${formatPrice(manufacturerData[name])})`}
+                            formatter={(value, name) => `${value}% (${formatPrice(manufacturerData[name])})`} // Formatter requires name from config, value is percentage
                             labelFormatter={(label) => label} // Show manufacturer name in tooltip header
                             indicator="dot"
                         />}
                       />
+                     {/* Use the 'fill' property already assigned in chartData */}
                      <Bar dataKey="percentage" radius={4}>
-                        <LabelList dataKey="percentage" position="right" offset={8} className="fill-foreground" fontSize={12} formatter={(value: number) => `${value}%`} />
+                        {/* Use the index-based fill from chartData */}
+                        {chartData.map((entry, index) => (
+                            <LabelList key={`label-${index}`} dataKey="percentage" position="right" offset={8} className="fill-foreground" fontSize={12} formatter={(value: number) => `${value}%`} />
+                        ))}
                      </Bar>
                    </BarChart>
                  </ResponsiveContainer>
