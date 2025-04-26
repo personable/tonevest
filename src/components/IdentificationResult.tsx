@@ -2,7 +2,7 @@ import type { IdentifyPedalsOutput } from '@/ai/flows/identify-pedal-from-image'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Info, Tag, DollarSign, Lightbulb, ThumbsUp, ThumbsDown, AlertTriangle } from 'lucide-react'; // Import icons
+import { Info, Tag, DollarSign, Lightbulb, ThumbsUp, ThumbsDown, AlertTriangle, Building, Box } from 'lucide-react'; // Added Building and Box icons
 
 interface IdentificationResultProps {
   result: IdentifyPedalsOutput | null;
@@ -69,8 +69,14 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
        </h2>
        {result.pedalIdentifications.map((pedal, index) => (
          <Card key={index} className="w-full shadow-sm border overflow-hidden">
-           <CardHeader className="pb-2 pt-4 bg-muted/50">
-             <CardTitle className="text-lg">Pedal #{index + 1}: {pedal.make} {pedal.model}</CardTitle>
+           <CardHeader className="pb-3 pt-4 bg-muted/50">
+             {/* Display Make and Model Separately */}
+             <CardTitle className="text-lg flex items-center gap-2">
+                <Building className="w-5 h-5 text-primary" /> {pedal.make}
+             </CardTitle>
+             <CardDescription className="flex items-center gap-2 pt-1">
+                <Box className="w-4 h-4 text-muted-foreground"/> {pedal.model}
+             </CardDescription>
            </CardHeader>
            <CardContent className="space-y-3 p-4">
               {/* Confidence */}
