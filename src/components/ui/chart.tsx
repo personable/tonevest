@@ -139,14 +139,17 @@ const ChartTooltipContent = React.forwardRef<
       }
 
       const [item] = payload
+      // Access the label directly from the provided label prop or the payload's label
+      const resolvedLabel = label ?? (item.payload && item.payload[labelKey || 'name'] || item.name);
+
       const key = `${labelKey || item.dataKey || item.name || "value"}`
       const itemConfig = getPayloadConfigFromPayload(config, item, key)
       const value =
-        !labelKey && typeof label === "string"
-          ? config[label as keyof typeof config]?.label || label
-          : itemConfig?.label
+        !labelKey && typeof resolvedLabel === "string"
+          ? config[resolvedLabel as keyof typeof config]?.label || resolvedLabel
+          : itemConfig?.label;
 
-      if (labelFormatter) {
+      if (labelFormatter && value !== undefined) {
         return (
           <div className={cn("font-medium", labelClassName)}>
             {labelFormatter(value, payload)}
@@ -186,20 +189,23 @@ const ChartTooltipContent = React.forwardRef<
         {!nestLabel ? tooltipLabel : null}
         <div className="grid gap-1.5">
           {payload.map((item, index) => {
-            const key = `${nameKey || item.name || item.dataKey || "value"}`
-            const itemConfig = getPayloadConfigFromPayload(config, item, key)
-            const indicatorColor = color || item.payload.fill || item.color
+             // Handle different payload structures for key access
+             const key = `${nameKey || item.name || item.dataKey || (item.payload && item.payload.name) || "value"}`
+             const itemConfig = getPayloadConfigFromPayload(config, item, key)
+             // Use fill from payload if available, otherwise item color
+             const indicatorColor = color || item.payload?.fill || item.color || itemConfig?.color
 
             return (
               <div
-                key={item.dataKey}
+                key={item.dataKey || item.name || index} // Use a more robust key
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
                 )}
               >
                 {formatter && item?.value !== undefined && item.name ? (
-                  formatter(item.value, item.name, item, index, item.payload)
+                  // Pass the correct name to the formatter
+                  formatter(item.value, item.name || key, item, index, item.payload)
                 ) : (
                   <>
                     {itemConfig?.icon ? (
@@ -235,10 +241,12 @@ const ChartTooltipContent = React.forwardRef<
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
                         <span className="text-muted-foreground">
-                          {itemConfig?.label || item.name}
+                           {/* Display label from config or fallback to name/key */}
+                           {itemConfig?.label || item.name || key}
                         </span>
                       </div>
-                      {item.value && (
+                      {/* Display formatted value */}
+                      {item.value !== undefined && (
                         <span className="font-mono font-medium tabular-nums text-foreground">
                           {item.value.toLocaleString()}
                         </span>
@@ -350,9 +358,8 @@ function getPayloadConfigFromPayload(
     ] as string
   }
 
-  return configLabelKey in config
-    ? config[configLabelKey]
-    : config[key as keyof typeof config]
+  // Use the resolved key to look up in the config
+  return config[configLabelKey] || config[key as keyof typeof config];
 }
 
 export {

@@ -2,7 +2,9 @@ import type { IdentifyPedalsOutput } from '@/ai/flows/identify-pedal-from-image'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Info, Tag, DollarSign, Lightbulb, ThumbsUp, ThumbsDown, AlertTriangle, Building, Box, Sigma, MessageSquareQuote } from 'lucide-react'; // Added Sigma, MessageSquareQuote
+import { Info, Tag, DollarSign, Lightbulb, ThumbsUp, ThumbsDown, AlertTriangle, Building, Box, Sigma, MessageSquareQuote, BarChartHorizontalBig } from 'lucide-react'; // Added BarChartHorizontalBig
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from 'recharts'; // Import recharts components
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"; // Import chart components
 
 interface IdentificationResultProps {
   result: IdentifyPedalsOutput | null;
@@ -20,7 +22,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
       <div className="space-y-4 mt-6">
         <Card className="w-full shadow-md border">
           <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2 font-serif"> {/* Added font-serif */}
+            <CardTitle className="text-xl flex items-center gap-2 font-serif">
               <Info className="w-5 h-5" /> Identification Result
             </CardTitle>
           </CardHeader>
@@ -32,7 +34,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
         {result.overallAssessment && (
            <Card className="w-full shadow-md border bg-muted/20">
              <CardHeader className="pb-2 pt-3">
-               <CardTitle className="text-lg flex items-center gap-2 font-serif"> {/* Added font-serif */}
+               <CardTitle className="text-lg flex items-center gap-2 font-serif">
                  <MessageSquareQuote className="w-5 h-5 text-primary" /> Overall Assessment
                </CardTitle>
              </CardHeader>
@@ -50,6 +52,35 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
     // Add the price if it's a valid number (not null)
     return total + (pedal.estimatedUsedPrice ?? 0);
   }, 0);
+
+  // Group pedals by manufacturer and sum their prices
+  const manufacturerData = result.pedalIdentifications.reduce((acc, pedal) => {
+    const make = pedal.make || 'Unknown';
+    const price = pedal.estimatedUsedPrice ?? 0;
+    acc[make] = (acc[make] || 0) + price;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Prepare data for the bar chart
+  const chartData = Object.entries(manufacturerData)
+    .map(([make, value]) => ({
+      make,
+      value,
+      // Calculate percentage only if totalPrice is not zero
+      percentage: totalPrice > 0 ? Math.round((value / totalPrice) * 100) : 0,
+      fill: `hsl(var(--chart-${(Object.keys(acc).indexOf(make) % 5) + 1}))` // Assign color based on index
+    }))
+    .filter(item => item.value > 0) // Filter out manufacturers with zero value
+    .sort((a, b) => b.value - a.value); // Sort by value descending
+
+  // Define chart configuration for tooltips and colors
+  const chartConfig = chartData.reduce((acc, item, index) => {
+    acc[item.make] = {
+      label: item.make,
+      color: `hsl(var(--chart-${(index % 5) + 1}))`, // Use the same color logic
+    };
+    return acc;
+  }, {} as ChartConfig);
 
   const getConfidenceBadgeVariant = (score: number | undefined) => {
     if (score === undefined) return 'secondary';
@@ -96,7 +127,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
 
   return (
     <div className="space-y-4 mt-6">
-       <h2 className="text-xl font-semibold text-center flex items-center justify-center gap-2 mb-4 font-serif"> {/* Added font-serif */}
+       <h2 className="text-xl font-semibold text-center flex items-center justify-center gap-2 mb-4 font-serif">
          <Tag className="w-5 h-5" /> Identification Results
        </h2>
 
@@ -104,7 +135,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
         <Card className="w-full shadow-md border bg-muted/30">
             <CardContent className="p-4">
                 <div className="flex justify-between items-center">
-                    <span className="font-semibold text-lg flex items-center gap-2 font-serif"> {/* Added font-serif */}
+                    <span className="font-semibold text-lg flex items-center gap-2 font-serif">
                         <Sigma className="w-5 h-5 text-primary" /> Total Estimated Value:
                     </span>
                     <span className="text-xl font-bold text-primary">
@@ -121,7 +152,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
        {result.overallAssessment && (
          <Card className="w-full shadow-md border bg-muted/20">
            <CardHeader className="pb-2 pt-3">
-             <CardTitle className="text-lg flex items-center gap-2 font-serif"> {/* Added font-serif */}
+             <CardTitle className="text-lg flex items-center gap-2 font-serif">
                <MessageSquareQuote className="w-5 h-5 text-primary" /> Overall Assessment
              </CardTitle>
            </CardHeader>
@@ -131,6 +162,47 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
          </Card>
        )}
 
+       {/* Manufacturer Value Distribution Chart */}
+       {chartData.length > 0 && totalPrice > 0 && (
+          <Card className="w-full shadow-md border">
+            <CardHeader className="pb-2 pt-3">
+              <CardTitle className="text-lg flex items-center gap-2 font-serif">
+                <BarChartHorizontalBig className="w-5 h-5 text-primary" /> Manufacturer Value Distribution
+              </CardTitle>
+              <CardDescription>Percentage of total value by manufacturer</CardDescription>
+            </CardHeader>
+            <CardContent className="pb-4">
+              <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height={200}>
+                   <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 30 }}>
+                     <CartesianGrid horizontal={false} />
+                     <XAxis type="number" dataKey="percentage" unit="%" hide />
+                     <YAxis
+                       dataKey="make"
+                       type="category"
+                       tickLine={false}
+                       axisLine={false}
+                       tick={{ fontSize: 12 }}
+                       width={80} // Adjust width as needed
+                     />
+                     <Tooltip
+                        cursor={{ fill: 'hsl(var(--muted))' }}
+                        content={<ChartTooltipContent
+                            formatter={(value, name) => `${name}: ${value}% (${formatPrice(manufacturerData[name])})`}
+                            labelFormatter={(label) => label} // Show manufacturer name in tooltip header
+                            indicator="dot"
+                        />}
+                      />
+                     <Bar dataKey="percentage" radius={4}>
+                        <LabelList dataKey="percentage" position="right" offset={8} className="fill-foreground" fontSize={12} formatter={(value: number) => `${value}%`} />
+                     </Bar>
+                   </BarChart>
+                 </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+       )}
+
 
         <Separator />
 
@@ -138,7 +210,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
          <Card key={index} className="w-full shadow-sm border overflow-hidden">
            <CardHeader className="pb-3 pt-4 bg-muted/50">
              {/* Display Make and Model Separately */}
-             <CardTitle className="text-lg flex items-center gap-2 font-serif"> {/* Added font-serif */}
+             <CardTitle className="text-lg flex items-center gap-2 font-serif">
                 <Building className="w-5 h-5 text-primary" /> {pedal.make || 'Unknown Make'}
              </CardTitle>
              <CardDescription className="flex items-center gap-2 pt-1">
