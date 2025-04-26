@@ -1,3 +1,4 @@
+
 import type { IdentifyPedalsOutput } from '@/ai/flows/identify-pedal-from-image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +17,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
     return null;
   }
 
-  // Handle case where no pedals were identified, but assessment might still exist
+  // Handle case where no pedals were identified
   if (result.pedalIdentifications.length === 0) {
     return (
       <div className="space-y-4 mt-6">
@@ -31,19 +32,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
             <p className="text-muted-foreground">No pedals were identified in the image.</p>
           </CardContent>
         </Card>
-        {/* Display overall assessment even if no pedals are found */}
-        {result.overallAssessment && (
-           <Card className="w-full border rounded-none bg-muted/20">
-             <CardHeader className="pb-2 pt-3">
-               <CardTitle className="text-lg flex items-center gap-2 font-serif">
-                 <MessageSquareQuote className="w-5 h-5 text-primary" /> Overall Assessment
-               </CardTitle>
-             </CardHeader>
-             <CardContent className="pb-3">
-               <p className="text-sm text-foreground/90 italic">{result.overallAssessment}</p>
-             </CardContent>
-           </Card>
-        )}
+        {/* Overall Assessment is intentionally removed here when no pedals are found */}
       </div>
     );
   }
