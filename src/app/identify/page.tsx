@@ -33,44 +33,84 @@ export default function IdentifyPage() {
   const { toast } = useToast();
 
   // Request Camera Permission and Start Stream
-  const startCamera = async () => {
-    if (streamRef.current) {
-      // Camera already running
-      setHasCameraPermission(true);
+  const startCamera = React.useCallback(async () => {
+    // Prevent starting if stream exists or not in camera mode
+    if (streamRef.current || inputMode !== 'camera') {
+       if (streamRef.current) setHasCameraPermission(true); // Assume permission if stream exists
       return;
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       streamRef.current = stream;
       setHasCameraPermission(true);
+
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        // Ensure video plays when stream is set and component is mounted
-        videoRef.current.play().catch(err => console.error("Error playing video:", err));
+        // Ensure previous metadata listeners are removed if any
+         videoRef.current.onloadedmetadata = null;
+
+         videoRef.current.srcObject = stream;
+
+         // Wait for metadata to load before attempting to play
+         videoRef.current.onloadedmetadata = () => {
+           videoRef.current?.play().catch(err => {
+             console.error("Error playing video:", err.name, err.message);
+             // Specifically handle AbortError which indicates interruption
+             if (err.name === 'AbortError') {
+               console.log("Video play() request was interrupted. This is often normal during navigation or stream changes.");
+             } else if (err.name === 'NotAllowedError') {
+               toast({
+                 variant: 'destructive',
+                 title: 'Autoplay Failed',
+                 description: 'Camera started, but autoplay was prevented. You might need to interact with the page.',
+               });
+              } else {
+                // Handle other potential errors
+                toast({
+                  variant: 'destructive',
+                  title: 'Camera Error',
+                  description: 'Could not play video stream.',
+                });
+              }
+           });
+         };
+         // Handle potential errors during loading
+         videoRef.current.onerror = () => {
+           console.error("Error loading video stream.");
+           toast({
+              variant: 'destructive',
+              title: 'Camera Load Error',
+              description: 'Failed to load the video stream.',
+           });
+         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error accessing camera:', error);
       setHasCameraPermission(false);
       streamRef.current = null; // Ensure streamRef is null on error
       toast({
         variant: 'destructive',
         title: 'Camera Access Denied',
-        description: 'Please enable camera permissions in your browser settings to use this feature.',
+        description: error.name === 'NotAllowedError'
+          ? 'Please enable camera permissions in your browser settings.'
+          : `Could not access camera: ${error.message}`,
       });
     }
-  };
+  }, [inputMode, toast]); // Dependencies for useCallback
 
   // Stop Camera Stream
-  const stopCamera = () => {
+  const stopCamera = React.useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
       if (videoRef.current) {
         videoRef.current.srcObject = null; // Remove stream from video element
+         // Remove event listeners to prevent memory leaks
+         videoRef.current.onloadedmetadata = null;
+         videoRef.current.onerror = null;
       }
       // Don't reset permission status here, just stop the stream
     }
-  };
+  }, []); // No dependencies needed
 
   // Handle Mode Change
   React.useEffect(() => {
@@ -80,15 +120,13 @@ export default function IdentifyPage() {
       setIdentificationResult(null); // Clear results
     } else {
       stopCamera();
-       // Optionally clear captured image when switching to upload
-       // setImageDataUri(null);
        setIdentificationResult(null); // Clear results
     }
     // Cleanup function to stop camera when component unmounts or mode changes
     return () => {
       stopCamera();
     };
-  }, [inputMode]);
+  }, [inputMode, startCamera, stopCamera]); // Include start/stopCamera
 
 
   const handleCapture = () => {
@@ -188,18 +226,9 @@ export default function IdentifyPage() {
 
           <Tabs value={inputMode} onValueChange={(value) => setInputMode(value as InputMode)} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="upload"><Upload className="w-4 h-4 mr-2" />Upload Photo</TabsTrigger>
               <TabsTrigger value="camera"><Camera className="w-4 h-4 mr-2" />Use Camera</TabsTrigger>
+              <TabsTrigger value="upload"><Upload className="w-4 h-4 mr-2" />Upload Photo</TabsTrigger>
             </TabsList>
-
-            {/* Upload Tab */}
-            <TabsContent value="upload" className="mt-4">
-              <ImageInput
-                onImageChange={setImageDataUri}
-                currentImage={imageDataUri} // Pass current image for preview consistency
-                onClear={handleClearImage} // Pass clear handler
-              />
-            </TabsContent>
 
             {/* Camera Tab */}
             <TabsContent value="camera" className="mt-4 space-y-4">
@@ -209,18 +238,18 @@ export default function IdentifyPage() {
                 <video
                   ref={videoRef}
                   className={`w-full h-full object-cover ${hasCameraPermission === false ? 'hidden' : ''}`} // Hide visually if no permission, but keep in DOM
-                  autoPlay
+                  autoPlay // Autoplay is often desired, but might be blocked by browser
                   playsInline // Important for iOS
-                  muted // Mute to avoid feedback loops
+                  muted // Mute is necessary for autoplay without user interaction
                 />
                  {/* Overlay for permission status */}
-                 {hasCameraPermission === null && (
+                 {hasCameraPermission === null && inputMode === 'camera' && (
                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
                      Requesting camera access...
                    </div>
                  )}
                  {/* Display permission denied message only if permission is false */}
-                 {hasCameraPermission === false && (
+                 {hasCameraPermission === false && inputMode === 'camera' && (
                    <div className="absolute inset-0 flex items-center justify-center bg-destructive/80 text-destructive-foreground p-4 text-center">
                      Camera access denied. Please enable in browser settings.
                    </div>
@@ -231,8 +260,8 @@ export default function IdentifyPage() {
                      <Image
                        src={imageDataUri}
                        alt="Captured pedal"
-                       layout="fill"
-                       objectFit="contain"
+                       fill // Use fill and objectFit for responsiveness
+                       objectFit="contain" // Contain ensures the whole image is visible
                        className="rounded-none" // Removed rounded corners
                      />
                     <Button
@@ -249,7 +278,7 @@ export default function IdentifyPage() {
               </div>
 
               {/* Show permission denied alert below video */}
-              {hasCameraPermission === false && (
+              {hasCameraPermission === false && inputMode === 'camera' && (
                  <Alert variant="destructive" className="rounded-none"> {/* Removed rounded corners */}
                    <AlertTitle>Camera Access Required</AlertTitle>
                    <AlertDescription>
@@ -259,7 +288,7 @@ export default function IdentifyPage() {
                )}
 
               {/* Show capture button only if permission granted and no image captured yet */}
-              {hasCameraPermission === true && !imageDataUri && (
+              {hasCameraPermission === true && !imageDataUri && inputMode === 'camera' && (
                 <Button
                   onClick={handleCapture}
                   disabled={isCapturing || !streamRef.current}
@@ -278,6 +307,17 @@ export default function IdentifyPage() {
                 </Button>
               )}
             </TabsContent>
+
+
+            {/* Upload Tab */}
+            <TabsContent value="upload" className="mt-4">
+              <ImageInput
+                onImageChange={setImageDataUri}
+                currentImage={imageDataUri} // Pass current image for preview consistency
+                onClear={handleClearImage} // Pass clear handler
+              />
+            </TabsContent>
+
           </Tabs>
 
 
