@@ -90,18 +90,15 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
              </div>
              <Separator/>
 
-             {/* Estimated Price */}
-              {pedal.estimatedUsedPrice && (
-                <>
-                 <div className="flex justify-between items-center">
-                    <span className="font-medium text-muted-foreground flex items-center gap-1">
-                      <DollarSign className="w-4 h-4" /> Used Price:
-                    </span>
-                   <span className="font-semibold">{pedal.estimatedUsedPrice}</span>
-                 </div>
-                  <Separator/>
-                </>
-              )}
+             {/* Estimated Price - Always render as it's required */}
+             <div className="flex justify-between items-center">
+                <span className="font-medium text-muted-foreground flex items-center gap-1">
+                  <DollarSign className="w-4 h-4" /> Used Price:
+                </span>
+               <span className="font-semibold">{pedal.estimatedUsedPrice}</span>
+             </div>
+              <Separator/>
+
 
               {/* Advice */}
               <div className="flex justify-between items-center">

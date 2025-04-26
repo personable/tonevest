@@ -23,7 +23,8 @@ const PedalIdentificationSchema = z.object({
     make: z.string().describe("The make of the guitar pedal."),
     model: z.string().describe("The model of the guitar pedal."),
     confidence: z.number().describe("The confidence score of the identification.").optional(),
-    estimatedUsedPrice: z.string().describe("Estimated used price range (e.g., '$50 - $75') based on market trends.").optional(),
+    // Make estimatedUsedPrice required
+    estimatedUsedPrice: z.string().describe("Required. Estimated used price range (e.g., '$50 - $75') based on market trends. If unknown, return 'Price Unknown'."),
     advice: z.enum(["Keep", "Sell", "Buy If Cheap", "Consider Selling"]).describe("Buy or sell advice for the pedal."),
     reasoning: z.string().describe("Reasoning behind the advice, considering quality, desirability, and market value."),
 });
@@ -57,11 +58,11 @@ const prompt = ai.definePrompt({
 
 You will be provided with a photo that may contain one or more guitar pedals. Identify the make and model of **all** guitar pedals visible in the image.
 
-For each identified pedal, provide:
+For each identified pedal, **you MUST provide all of the following fields**:
 1.  **make**: The manufacturer of the pedal.
 2.  **model**: The specific model name/number.
 3.  **confidence**: (Optional) Your confidence score (0-1) for the identification. Omit if unsure.
-4.  **estimatedUsedPrice**: An estimated price range (e.g., '$50 - $75', or '~$100') based on typical used condition prices found on platforms like Reverb or eBay. Omit if unknown.
+4.  **estimatedUsedPrice**: **Required**. An estimated price range (e.g., '$50 - $75', or '~$100') based on typical used condition prices found on platforms like Reverb or eBay. **If you cannot reasonably estimate a price, you MUST return the string "Price Unknown". Do not omit this field.**
 5.  **advice**: One of the following values: "Keep", "Sell", "Buy If Cheap", "Consider Selling".
 6.  **reasoning**: A brief explanation for your advice.
 
@@ -77,7 +78,7 @@ Analyze the following photo:
 
 {{media url=photoDataUri}}
 
-Respond with valid JSON. For each identified pedal, include all the requested fields. If no pedals are found, return an empty array for 'pedalIdentifications'. If you cannot estimate a price, omit the 'estimatedUsedPrice' field. If you cannot provide specific advice beyond identification, you may need to adjust reasoning accordingly.
+Respond with valid JSON. For each identified pedal, include all the requested fields (especially 'estimatedUsedPrice'). If no pedals are found, return an empty array for 'pedalIdentifications'.
 `,
 });
 
