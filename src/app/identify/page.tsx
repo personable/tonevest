@@ -2,6 +2,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link'; // Import Link
 import { identifyPedals } from '@/ai/flows/identify-pedal-from-image';
 import type { IdentifyPedalsInput, IdentifyPedalsOutput } from '@/ai/flows/identify-pedal-from-image';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ImageInput } from '@/components/ImageInput';
 import { IdentificationResult } from '@/components/IdentificationResult';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Guitar, Camera, Upload, X } from 'lucide-react';
+import { Guitar, Camera, Upload, X, ArrowLeft } from 'lucide-react'; // Import ArrowLeft
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Image from 'next/image'; // Import next/image
@@ -212,14 +213,26 @@ export default function IdentifyPage() {
     <main className="flex min-h-screen flex-col items-center p-4 sm:p-8 bg-background">
       {/* Removed max-w-lg and shadow-xl, adjusted layout */}
       <Card className="w-full h-full flex flex-col border-0 rounded-none">
-        <CardHeader className="text-center bg-primary text-primary-foreground p-4 border-b border-border">
-           <div className="flex justify-center items-center gap-2 mb-1">
-             <Guitar className="w-6 h-6" />
-             <CardTitle className="text-2xl font-bold font-serif">Pedal Identifier</CardTitle>
+        <CardHeader className="text-center bg-primary text-primary-foreground p-4 border-b border-border flex flex-row items-center justify-between">
+            {/* Back Button */}
+           <Link href="/" passHref>
+             <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80 h-8 w-8">
+               <ArrowLeft className="h-5 w-5" />
+               <span className="sr-only">Back to Home</span>
+             </Button>
+           </Link>
+           {/* Centered Title Group */}
+           <div className="flex flex-col items-center">
+             <div className="flex items-center gap-2 mb-1">
+               <Guitar className="w-6 h-6" />
+               <CardTitle className="text-2xl font-bold font-serif">Pedal Identifier</CardTitle>
+             </div>
+             <CardDescription className="text-primary-foreground/80 text-sm">
+               Upload or capture a photo containing guitar pedals.
+             </CardDescription>
            </div>
-          <CardDescription className="text-primary-foreground/80 text-sm">
-            Upload or capture a photo containing guitar pedals.
-          </CardDescription>
+           {/* Placeholder for potential right-side element, ensuring centering */}
+           <div className="w-8"></div>
         </CardHeader>
         {/* Added flex-grow to allow content to expand */}
         <CardContent className="p-4 sm:p-6 space-y-4 flex-grow overflow-y-auto">
