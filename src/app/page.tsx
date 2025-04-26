@@ -1,8 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { identifyPedal } from '@/ai/flows/identify-pedal-from-image';
-import type { IdentifyPedalInput, IdentifyPedalOutput } from '@/ai/flows/identify-pedal-from-image';
+import { identifyPedals } from '@/ai/flows/identify-pedal-from-image';
+import type { IdentifyPedalsInput, IdentifyPedalsOutput } from '@/ai/flows/identify-pedal-from-image';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +13,8 @@ import { Guitar } from 'lucide-react';
 
 export default function Home() {
   const [imageDataUri, setImageDataUri] = React.useState<string | null>(null);
-  const [identificationResult, setIdentificationResult] = React.useState<IdentifyPedalOutput | null>(null);
+  // State now holds the full output object which contains the array, or null
+  const [identificationResult, setIdentificationResult] = React.useState<IdentifyPedalsOutput | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
 
@@ -31,18 +32,23 @@ export default function Home() {
     setIdentificationResult(null); // Clear previous results
 
     try {
-      const input: IdentifyPedalInput = { photoDataUri: imageDataUri };
-      const result = await identifyPedal(input);
+      const input: IdentifyPedalsInput = { photoDataUri: imageDataUri };
+      // Use the updated function name
+      const result = await identifyPedals(input);
       setIdentificationResult(result);
+
+      const count = result.pedalIdentifications.length;
       toast({
         title: 'Identification Complete',
-        description: `Identified as ${result.pedalIdentification.make} ${result.pedalIdentification.model}.`,
+        description: count > 0
+          ? `Identified ${count} pedal${count > 1 ? 's' : ''}.`
+          : 'No pedals identified in the image.',
       });
     } catch (error) {
-      console.error('Error identifying pedal:', error);
+      console.error('Error identifying pedals:', error);
       toast({
         title: 'Identification Failed',
-        description: 'Could not identify the pedal. Please try another image.',
+        description: 'Could not identify pedals. Please try another image or check the console.',
         variant: 'destructive',
       });
        setIdentificationResult(null); // Ensure result is cleared on error
@@ -50,6 +56,8 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+   const hasResults = identificationResult && identificationResult.pedalIdentifications.length > 0;
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-background via-secondary/20 to-background">
@@ -60,7 +68,7 @@ export default function Home() {
              <CardTitle className="text-3xl font-bold">Pedal Identifier</CardTitle>
            </div>
           <CardDescription className="text-primary-foreground/80">
-            Upload a photo of a guitar pedal and let AI identify it!
+            Upload a photo containing guitar pedals and let AI identify them!
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
@@ -78,7 +86,7 @@ export default function Home() {
                 Identifying...
               </>
             ) : (
-              'Identify Pedal'
+              'Identify Pedals'
             )}
           </Button>
 
@@ -88,11 +96,11 @@ export default function Home() {
           )}
 
           {/* Optional: Placeholder or message when no result and not loading */}
-          {!isLoading && !identificationResult && imageDataUri && (
-            <div className="text-center text-muted-foreground p-4 border border-dashed rounded-md">
-               Click "Identify Pedal" to see the results.
-            </div>
-          )}
+          {!isLoading && !hasResults && imageDataUri && !identificationResult?.pedalIdentifications && (
+             <div className="text-center text-muted-foreground p-4 border border-dashed rounded-md">
+               Click "Identify Pedals" to see the results.
+             </div>
+           )}
 
         </CardContent>
       </Card>
