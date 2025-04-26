@@ -19,12 +19,12 @@ const IdentifyPedalsInputSchema = z.object({
 });
 export type IdentifyPedalsInput = z.infer<typeof IdentifyPedalsInputSchema>;
 
-// Updated schema to use 'make' and 'model'
+// Updated schema to use 'make' and 'model' and a nullable number for price
 const PedalIdentificationSchema = z.object({
     make: z.string().describe("The manufacturer (make) of the guitar pedal."),
     model: z.string().describe("The specific model name/number of the guitar pedal."),
     confidence: z.number().describe("The confidence score of the identification.").optional(),
-    estimatedUsedPrice: z.string().describe("Required. Estimated used price range (e.g., '$50 - $75') based on market trends. If unknown, return 'Price Unknown'."),
+    estimatedUsedPrice: z.number().nullable().describe("Required. Estimated midpoint used price (e.g., 62.5 for a '$50-$75' range) based on market trends. If unknown, return null."),
     advice: z.enum(["Keep", "Sell", "Buy If Cheap", "Consider Selling"]).describe("Buy or sell advice for the pedal."),
     reasoning: z.string().describe("Required. Unique reasoning behind the advice for this specific pedal, delivered in the tone of a stuffy financial advisor who is disdainful of guitar pedals as an asset class. Focus on volatility, depreciation, lack of tangible returns, and the 'fickle' nature of the market compared to 'proper' investments. Ensure this reasoning is distinct for each pedal identified."),
 });
@@ -55,7 +55,7 @@ const prompt = ai.definePrompt({
        pedalIdentifications: z.array(PedalIdentificationSchema).describe("An array of identified guitar pedals found in the image, including make, model, price estimates, and unique, disdainful financial advisor advice for each."),
     }),
   },
-  // Updated prompt instructions for make/model and unique reasoning
+  // Updated prompt instructions for make/model, unique reasoning, and single midpoint price (number or null)
   prompt: `You are an expert in identifying guitar pedals and assessing their used market value. However, you adopt the persona of a **stuffy, old-school financial advisor** who finds the entire concept of investing in guitar pedals rather frivolous and misguided compared to traditional assets like stocks or bonds. Your tone should be slightly condescending, formal, and express skepticism about their value retention and 'investment' potential.
 
 You will be provided with a photo that may contain one or more guitar pedals. Identify the **manufacturer (make)** and the **specific model name/number (model)** of **all** guitar pedals visible in the image.
@@ -64,7 +64,7 @@ For each identified pedal, **you MUST provide all of the following fields**:
 1.  **make**: The manufacturer of the pedal (e.g., "Strymon").
 2.  **model**: The specific model name/number (e.g., "Big Sky").
 3.  **confidence**: (Optional) Your confidence score (0-1) for the identification. Omit if unsure.
-4.  **estimatedUsedPrice**: **Required**. An estimated price range (e.g., '$50 - $75', or '~$100') based on typical used condition prices found on platforms like Reverb or eBay. **If you cannot reasonably estimate a price, you MUST return the string "Price Unknown". Do not omit this field.**
+4.  **estimatedUsedPrice**: **Required**. Determine the typical used price range (e.g., '$50 - $75') based on current market trends on platforms like Reverb or eBay. Calculate the **midpoint** of this range and return it as a **single number** (e.g., for '$50 - $75', return 62.5). If the price is typically a single value (e.g., '~$100'), return that number (e.g., 100). **If you cannot reasonably estimate a price, you MUST return \`null\` for this field. Do not return strings like "Price Unknown".**
 5.  **advice**: One of the following values: "Keep", "Sell", "Buy If Cheap", "Consider Selling". Base this on market trends but frame it within your advisor persona.
 6.  **reasoning**: **Required and Unique.** Provide a brief, **distinct and unique** explanation for your advice **for this specific pedal** in the persona of the stuffy financial advisor. **Crucially, the reasoning for each pedal must be different from the reasoning provided for any other pedal in this response.** Focus on aspects like:
     *   Rapid depreciation ("...likely to depreciate faster than a poorly chosen tech stock.")
@@ -87,7 +87,7 @@ Analyze the following photo:
 
 {{media url=photoDataUri}}
 
-Respond with valid JSON. For each identified pedal, include all the requested fields (make, model, estimatedUsedPrice, advice, reasoning). Ensure 'reasoning' is **unique** for each pedal identified. If no pedals are found, return an empty array for 'pedalIdentifications'.
+Respond with valid JSON. For each identified pedal, include all the requested fields (make, model, estimatedUsedPrice [as number or null], advice, reasoning). Ensure 'reasoning' is **unique** for each pedal identified. If no pedals are found, return an empty array for 'pedalIdentifications'.
 `,
 });
 

@@ -8,39 +8,6 @@ interface IdentificationResultProps {
   result: IdentifyPedalsOutput | null;
 }
 
-// Helper function to parse price string and return a number or null
-const parsePrice = (priceString: string): number | null => {
-    if (!priceString || priceString.toLowerCase() === "price unknown") {
-      return null;
-    }
-
-    // Remove non-numeric characters except '.' and '-' (for ranges) and potential spaces
-    const cleanedString = priceString.replace(/[$,~]/g, '').trim();
-
-    // Check for range format "X - Y"
-    const rangeMatch = cleanedString.match(/^(\d+(\.\d+)?)\s*-\s*(\d+(\.\d+)?)$/);
-    if (rangeMatch) {
-      const lower = parseFloat(rangeMatch[1]);
-      const upper = parseFloat(rangeMatch[3]);
-      if (!isNaN(lower) && !isNaN(upper)) {
-        return (lower + upper) / 2;
-      }
-    }
-
-    // Check for single number format
-    const singleMatch = cleanedString.match(/^(\d+(\.\d+)?)$/);
-    if (singleMatch) {
-      const value = parseFloat(singleMatch[1]);
-      if (!isNaN(value)) {
-        return value;
-      }
-    }
-
-    console.warn(`Could not parse price string: "${priceString}"`); // Log unparsed strings
-    return null; // Return null if parsing fails or format is unexpected
-};
-
-
 export function IdentificationResult({ result }: IdentificationResultProps) {
   if (!result || result.pedalIdentifications.length === 0) {
      // Display a message if the array is empty but the result object exists
@@ -61,10 +28,10 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
     return null; // Return null if result itself is null
   }
 
-  // Calculate total price
+  // Calculate total price using the number field directly
   const totalPrice = result.pedalIdentifications.reduce((total, pedal) => {
-    const price = parsePrice(pedal.estimatedUsedPrice);
-    return total + (price || 0);
+    // Add the price if it's a valid number (not null)
+    return total + (pedal.estimatedUsedPrice ?? 0);
   }, 0);
 
   const getConfidenceBadgeVariant = (score: number | undefined) => {
@@ -101,6 +68,15 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
       }
    }
 
+   // Helper to format price
+   const formatPrice = (price: number | null): string => {
+     if (price === null) {
+       return "Price Unknown";
+     }
+     // Format as currency, e.g., $62.50
+     return `$${price.toFixed(2)}`;
+   };
+
   return (
     <div className="space-y-4 mt-6">
        <h2 className="text-xl font-semibold text-center flex items-center justify-center gap-2 mb-4">
@@ -115,11 +91,11 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
                         <Sigma className="w-5 h-5 text-primary" /> Total Estimated Value:
                     </span>
                     <span className="text-xl font-bold text-primary">
-                        ${totalPrice.toFixed(2)}
+                        {formatPrice(totalPrice)} {/* Use the formatter */}
                     </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1 text-right">
-                    Based on average used prices. Excludes pedals with unknown prices.
+                    Based on estimated used prices. Excludes pedals with unknown prices.
                 </p>
             </CardContent>
         </Card>
@@ -155,12 +131,12 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
              </div>
              <Separator/>
 
-             {/* Estimated Price - Always render as it's required */}
+             {/* Estimated Price - Display formatted price or "Price Unknown" */}
              <div className="flex justify-between items-center">
                 <span className="font-medium text-muted-foreground flex items-center gap-1 text-sm">
                   <DollarSign className="w-4 h-4" /> Used Price:
                 </span>
-               <span className="font-semibold">{pedal.estimatedUsedPrice}</span>
+               <span className="font-semibold">{formatPrice(pedal.estimatedUsedPrice)}</span>
              </div>
               <Separator/>
 
