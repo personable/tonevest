@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Info, Tag, DollarSign, Lightbulb, ThumbsUp, ThumbsDown, AlertTriangle, Building, Box, Sigma, MessageSquareQuote, BarChartHorizontalBig } from 'lucide-react'; // Added BarChartHorizontalBig
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from 'recharts'; // Import recharts components
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList, TooltipPayload } from 'recharts'; // Import recharts components
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"; // Import chart components
 
 interface IdentificationResultProps {
@@ -75,9 +75,10 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
 
   // Define chart configuration for tooltips and colors
   const chartConfig = chartData.reduce((acc, item, index) => {
+    // Use the final index *after sorting* for consistent color assignment
     acc[item.make] = {
       label: item.make,
-      color: `hsl(var(--chart-${(index % 5) + 1}))`, // Use the same color logic based on the final sorted array index
+      color: `hsl(var(--chart-${(index % 5) + 1}))`,
     };
     return acc;
   }, {} as ChartConfig);
@@ -117,14 +118,39 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
       }
    }
 
-   // Helper to format price
-   const formatPrice = (price: number | null): string => {
-     if (price === null) {
+   // Helper to format price - Added check for undefined
+   const formatPrice = (price: number | null | undefined): string => {
+     if (price === null || price === undefined) {
        return "Price Unknown";
      }
      // Format as currency, e.g., $62.50
      return `$${price.toFixed(2)}`;
    };
+
+    // Custom Tooltip Formatter
+    const customTooltipFormatter = (
+        value: number, // This is the 'percentage' value from the Bar dataKey
+        name: string, // This is the dataKey name ('percentage')
+        item: TooltipPayload<number, string>, // The payload object for the specific item
+        index: number,
+        payload: TooltipPayload<number, string>[] // Full payload array
+    ) => {
+        // Access the 'make' from the payload item
+        const make = item?.payload?.make;
+        if (!make) return null; // Should not happen if data is correct
+
+        // Look up the actual price from manufacturerData using the 'make'
+        const actualPrice = manufacturerData[make];
+
+        return (
+            <div className="flex flex-col gap-0.5">
+                <span className="font-medium">{make}</span>
+                <span className="text-muted-foreground">
+                    {value}% ({formatPrice(actualPrice)})
+                </span>
+            </div>
+        );
+    };
 
   return (
     <div className="space-y-4 mt-6">
@@ -190,16 +216,17 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
                      <Tooltip
                         cursor={{ fill: 'hsl(var(--muted))' }}
                         content={<ChartTooltipContent
-                            formatter={(value, name) => `${value}% (${formatPrice(manufacturerData[name])})`} // Formatter requires name from config, value is percentage
-                            labelFormatter={(label) => label} // Show manufacturer name in tooltip header
+                            formatter={customTooltipFormatter} // Use the custom formatter
+                            // labelFormatter={(label) => label} // labelFormatter is not needed if formatter handles everything
                             indicator="dot"
+                            // hideLabel // Hide default label if formatter handles it
                         />}
                       />
                      {/* Use the 'fill' property already assigned in chartData */}
                      <Bar dataKey="percentage" radius={4}>
                         {/* Use the index-based fill from chartData */}
                         {chartData.map((entry, index) => (
-                            <LabelList key={`label-${index}`} dataKey="percentage" position="right" offset={8} className="fill-foreground" fontSize={12} formatter={(value: number) => `${value}%`} />
+                           <LabelList key={`label-${index}`} dataKey="percentage" position="right" offset={8} className="fill-foreground" fontSize={12} formatter={(value: number) => `${value}%`} />
                         ))}
                      </Bar>
                    </BarChart>
