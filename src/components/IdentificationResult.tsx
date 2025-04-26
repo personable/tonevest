@@ -2,18 +2,51 @@ import type { IdentifyPedalsOutput } from '@/ai/flows/identify-pedal-from-image'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Info, Tag, DollarSign, Lightbulb, ThumbsUp, ThumbsDown, AlertTriangle, Building, Box } from 'lucide-react'; // Added Building and Box icons
+import { Info, Tag, DollarSign, Lightbulb, ThumbsUp, ThumbsDown, AlertTriangle, Building, Box, Sigma } from 'lucide-react'; // Added Sigma for total
 
 interface IdentificationResultProps {
   result: IdentifyPedalsOutput | null;
 }
+
+// Helper function to parse price string and return a number or null
+const parsePrice = (priceString: string): number | null => {
+    if (!priceString || priceString.toLowerCase() === "price unknown") {
+      return null;
+    }
+
+    // Remove non-numeric characters except '.' and '-' (for ranges) and potential spaces
+    const cleanedString = priceString.replace(/[$,~]/g, '').trim();
+
+    // Check for range format "X - Y"
+    const rangeMatch = cleanedString.match(/^(\d+(\.\d+)?)\s*-\s*(\d+(\.\d+)?)$/);
+    if (rangeMatch) {
+      const lower = parseFloat(rangeMatch[1]);
+      const upper = parseFloat(rangeMatch[3]);
+      if (!isNaN(lower) && !isNaN(upper)) {
+        return (lower + upper) / 2;
+      }
+    }
+
+    // Check for single number format
+    const singleMatch = cleanedString.match(/^(\d+(\.\d+)?)$/);
+    if (singleMatch) {
+      const value = parseFloat(singleMatch[1]);
+      if (!isNaN(value)) {
+        return value;
+      }
+    }
+
+    console.warn(`Could not parse price string: "${priceString}"`); // Log unparsed strings
+    return null; // Return null if parsing fails or format is unexpected
+};
+
 
 export function IdentificationResult({ result }: IdentificationResultProps) {
   if (!result || result.pedalIdentifications.length === 0) {
      // Display a message if the array is empty but the result object exists
      if (result && result.pedalIdentifications.length === 0) {
        return (
-         <Card className="w-full shadow-md mt-6">
+         <Card className="w-full shadow-md mt-6 border">
            <CardHeader>
              <CardTitle className="text-xl flex items-center gap-2">
                 <Info className="w-5 h-5" /> Identification Result
@@ -27,6 +60,12 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
      }
     return null; // Return null if result itself is null
   }
+
+  // Calculate total price
+  const totalPrice = result.pedalIdentifications.reduce((total, pedal) => {
+    const price = parsePrice(pedal.estimatedUsedPrice);
+    return total + (price || 0);
+  }, 0);
 
   const getConfidenceBadgeVariant = (score: number | undefined) => {
     if (score === undefined) return 'secondary';
@@ -64,24 +103,44 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
 
   return (
     <div className="space-y-4 mt-6">
-       <h2 className="text-xl font-semibold text-center flex items-center justify-center gap-2">
+       <h2 className="text-xl font-semibold text-center flex items-center justify-center gap-2 mb-4">
          <Tag className="w-5 h-5" /> Identification Results
        </h2>
+
+        {/* Total Price Display */}
+        <Card className="w-full shadow-md border bg-muted/30">
+            <CardContent className="p-4">
+                <div className="flex justify-between items-center">
+                    <span className="font-semibold text-lg flex items-center gap-2">
+                        <Sigma className="w-5 h-5 text-primary" /> Total Estimated Value:
+                    </span>
+                    <span className="text-xl font-bold text-primary">
+                        ${totalPrice.toFixed(2)}
+                    </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 text-right">
+                    Based on average used prices. Excludes pedals with unknown prices.
+                </p>
+            </CardContent>
+        </Card>
+
+        <Separator />
+
        {result.pedalIdentifications.map((pedal, index) => (
          <Card key={index} className="w-full shadow-sm border overflow-hidden">
            <CardHeader className="pb-3 pt-4 bg-muted/50">
              {/* Display Make and Model Separately */}
              <CardTitle className="text-lg flex items-center gap-2">
-                <Building className="w-5 h-5 text-primary" /> {pedal.make}
+                <Building className="w-5 h-5 text-primary" /> {pedal.make || 'Unknown Make'}
              </CardTitle>
              <CardDescription className="flex items-center gap-2 pt-1">
-                <Box className="w-4 h-4 text-muted-foreground"/> {pedal.model}
+                <Box className="w-4 h-4 text-muted-foreground"/> {pedal.model || 'Unknown Model'}
              </CardDescription>
            </CardHeader>
            <CardContent className="space-y-3 p-4">
               {/* Confidence */}
               <div className="flex justify-between items-center">
-                <span className="font-medium text-muted-foreground flex items-center gap-1">
+                <span className="font-medium text-muted-foreground flex items-center gap-1 text-sm">
                    <Info className="w-4 h-4" /> Confidence:
                 </span>
                {pedal.confidence !== undefined ? (
@@ -98,7 +157,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
 
              {/* Estimated Price - Always render as it's required */}
              <div className="flex justify-between items-center">
-                <span className="font-medium text-muted-foreground flex items-center gap-1">
+                <span className="font-medium text-muted-foreground flex items-center gap-1 text-sm">
                   <DollarSign className="w-4 h-4" /> Used Price:
                 </span>
                <span className="font-semibold">{pedal.estimatedUsedPrice}</span>
@@ -108,7 +167,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
 
               {/* Advice */}
               <div className="flex justify-between items-center">
-                <span className="font-medium text-muted-foreground flex items-center gap-1">
+                <span className="font-medium text-muted-foreground flex items-center gap-1 text-sm">
                    {getAdviceIcon(pedal.advice)} Advice:
                 </span>
                  <Badge variant={getAdviceBadgeVariant(pedal.advice)} className="capitalize">
@@ -121,7 +180,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
                  <>
                   <Separator/>
                   <div>
-                      <span className="font-medium text-muted-foreground flex items-center gap-1 mb-1">
+                      <span className="font-medium text-muted-foreground flex items-center gap-1 mb-1 text-sm">
                           <Lightbulb className="w-4 h-4" /> Reasoning:
                       </span>
                      <p className="text-sm text-foreground/90 italic pl-2 border-l-2 border-border ml-2">{pedal.reasoning}</p>
