@@ -21,7 +21,8 @@ export default function Home() {
   const [imageDataUri, setImageDataUri] = React.useState<string | null>(null);
   const [identificationResult, setIdentificationResult] = React.useState<IdentifyPedalsOutput | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [inputMode, setInputMode] = React.useState<InputMode>('upload');
+  // Change default input mode to 'camera'
+  const [inputMode, setInputMode] = React.useState<InputMode>('camera');
   const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean | null>(null); // null initially, true/false after check
   const [isCapturing, setIsCapturing] = React.useState(false);
 
@@ -44,9 +45,7 @@ export default function Home() {
       setHasCameraPermission(true);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-      }
-      // Ensure video plays when stream is set
-      if (videoRef.current && videoRef.current.paused) {
+        // Ensure video plays when stream is set and component is mounted
         videoRef.current.play().catch(err => console.error("Error playing video:", err));
       }
     } catch (error) {
@@ -206,29 +205,28 @@ export default function Home() {
             <TabsContent value="camera" className="mt-4 space-y-4">
               {/* Adjusted video container styling */}
               <div className="relative aspect-video w-full bg-muted rounded-none overflow-hidden border">
-                {/* Show video only if permission is granted or pending */}
-                {hasCameraPermission !== false && (
-                  <video
-                    ref={videoRef}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    playsInline // Important for iOS
-                    muted // Mute to avoid feedback loops
-                  />
-                )}
-                {/* Overlay for permission status */}
-                {hasCameraPermission === null && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
-                    Requesting camera access...
-                  </div>
-                )}
-                {hasCameraPermission === false && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-destructive/80 text-destructive-foreground p-4 text-center">
-                    Camera access denied. Please enable in browser settings.
-                  </div>
-                )}
+                {/* Video tag is always present */}
+                <video
+                  ref={videoRef}
+                  className={`w-full h-full object-cover ${hasCameraPermission === false ? 'hidden' : ''}`} // Hide visually if no permission, but keep in DOM
+                  autoPlay
+                  playsInline // Important for iOS
+                  muted // Mute to avoid feedback loops
+                />
+                 {/* Overlay for permission status */}
+                 {hasCameraPermission === null && (
+                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
+                     Requesting camera access...
+                   </div>
+                 )}
+                 {/* Display permission denied message only if permission is false */}
+                 {hasCameraPermission === false && (
+                   <div className="absolute inset-0 flex items-center justify-center bg-destructive/80 text-destructive-foreground p-4 text-center">
+                     Camera access denied. Please enable in browser settings.
+                   </div>
+                 )}
                  {/* Show captured image preview */}
-                {imageDataUri && inputMode === 'camera' && (
+                 {imageDataUri && inputMode === 'camera' && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/80">
                      <Image
                        src={imageDataUri}
@@ -247,7 +245,7 @@ export default function Home() {
                       <X className="h-5 w-5" />
                     </Button>
                   </div>
-                )}
+                 )}
               </div>
 
               {/* Show permission denied alert below video */}
