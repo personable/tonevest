@@ -1,16 +1,20 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { IBM_Plex_Sans, IBM_Plex_Serif } from 'next/font/google'; // Import IBM Plex fonts
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster'; // Import Toaster
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+// Configure IBM Plex Sans for body text
+const ibmPlexSans = IBM_Plex_Sans({
+  variable: '--font-ibm-plex-sans',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'], // Include necessary weights
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+// Configure IBM Plex Serif for headings
+const ibmPlexSerif = IBM_Plex_Serif({
+  variable: '--font-ibm-plex-serif',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'], // Include necessary weights
 });
 
 export const metadata: Metadata = {
@@ -25,7 +29,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      {/* Apply font variables to the body */}
+      <body className={`${ibmPlexSans.variable} ${ibmPlexSerif.variable} font-sans antialiased`}>
         {children}
         <Toaster /> {/* Add Toaster component */}
       </body>

@@ -20,7 +20,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
       <div className="space-y-4 mt-6">
         <Card className="w-full shadow-md border">
           <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
+            <CardTitle className="text-xl flex items-center gap-2 font-serif"> {/* Added font-serif */}
               <Info className="w-5 h-5" /> Identification Result
             </CardTitle>
           </CardHeader>
@@ -32,7 +32,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
         {result.overallAssessment && (
            <Card className="w-full shadow-md border bg-muted/20">
              <CardHeader className="pb-2 pt-3">
-               <CardTitle className="text-lg flex items-center gap-2">
+               <CardTitle className="text-lg flex items-center gap-2 font-serif"> {/* Added font-serif */}
                  <MessageSquareQuote className="w-5 h-5 text-primary" /> Overall Assessment
                </CardTitle>
              </CardHeader>
@@ -96,7 +96,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
 
   return (
     <div className="space-y-4 mt-6">
-       <h2 className="text-xl font-semibold text-center flex items-center justify-center gap-2 mb-4">
+       <h2 className="text-xl font-semibold text-center flex items-center justify-center gap-2 mb-4 font-serif"> {/* Added font-serif */}
          <Tag className="w-5 h-5" /> Identification Results
        </h2>
 
@@ -104,7 +104,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
         <Card className="w-full shadow-md border bg-muted/30">
             <CardContent className="p-4">
                 <div className="flex justify-between items-center">
-                    <span className="font-semibold text-lg flex items-center gap-2">
+                    <span className="font-semibold text-lg flex items-center gap-2 font-serif"> {/* Added font-serif */}
                         <Sigma className="w-5 h-5 text-primary" /> Total Estimated Value:
                     </span>
                     <span className="text-xl font-bold text-primary">
@@ -121,7 +121,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
        {result.overallAssessment && (
          <Card className="w-full shadow-md border bg-muted/20">
            <CardHeader className="pb-2 pt-3">
-             <CardTitle className="text-lg flex items-center gap-2">
+             <CardTitle className="text-lg flex items-center gap-2 font-serif"> {/* Added font-serif */}
                <MessageSquareQuote className="w-5 h-5 text-primary" /> Overall Assessment
              </CardTitle>
            </CardHeader>
@@ -138,7 +138,7 @@ export function IdentificationResult({ result }: IdentificationResultProps) {
          <Card key={index} className="w-full shadow-sm border overflow-hidden">
            <CardHeader className="pb-3 pt-4 bg-muted/50">
              {/* Display Make and Model Separately */}
-             <CardTitle className="text-lg flex items-center gap-2">
+             <CardTitle className="text-lg flex items-center gap-2 font-serif"> {/* Added font-serif */}
                 <Building className="w-5 h-5 text-primary" /> {pedal.make || 'Unknown Make'}
              </CardTitle>
              <CardDescription className="flex items-center gap-2 pt-1">

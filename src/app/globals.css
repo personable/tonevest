@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-ibm-plex-sans); /* Use IBM Plex Sans for body */
 }
 
 @layer base {
@@ -84,6 +84,17 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans; /* Ensure body uses sans font */
   }
+  /* Apply serif font to headings */
+  h1, h2, h3, h4, h5, h6 {
+      @apply font-serif;
+  }
+  /* You can also apply directly to ShadCN title components if needed */
+  .card-title { /* Example for ShadCN CardTitle */
+     @apply font-serif;
+   }
+   .alert-title { /* Example for ShadCN AlertTitle */
+     @apply font-serif;
+   }
 }

@@ -65,7 +65,8 @@ export default function Home() {
         <CardHeader className="text-center bg-primary text-primary-foreground p-6">
            <div className="flex justify-center items-center gap-2 mb-2">
              <Guitar className="w-8 h-8" />
-             <CardTitle className="text-3xl font-bold">Pedal Identifier</CardTitle>
+             {/* Apply font-serif directly or rely on global CSS */}
+             <CardTitle className="text-3xl font-bold font-serif">Pedal Identifier</CardTitle>
            </div>
           <CardDescription className="text-primary-foreground/80">
             Upload a photo containing guitar pedals and let AI identify them!

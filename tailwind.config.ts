@@ -9,6 +9,10 @@ export default {
   ],
   theme: {
   	extend: {
+        fontFamily: {
+            sans: ["var(--font-ibm-plex-sans)"], // Use IBM Plex Sans variable
+            serif: ["var(--font-ibm-plex-serif)"], // Use IBM Plex Serif variable
+        },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
